@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillLink Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background-color: #000;
+    }
+    #galaxy {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+    }
+    .glass {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    .btn {
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    section {
+      scroll-margin-top: 80px;
+    }
+    .task-list {
+      display: none;
+    }
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+    }
+    .loader {
+      border: 6px solid #1f2937;
+      border-top: 6px solid #14b8a6;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .fade-out {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease;
+    }
+  </style>
+</head>
+<body class="text-white min-h-screen">
+
+  <!-- Preloader -->
+  <div id="preloader">
+    <div class="loader"></div>
+    <h1 class="text-teal-400 text-2xl font-bold animate-pulse">SkillLink</h1>
+  </div>
+
+  <canvas id="galaxy"></canvas>
+
+  <header class="w-full px-6 py-4 flex justify-between items-center glass shadow-lg fixed top-0 left-0 right-0 z-50">
+    <h1 class="text-3xl font-extrabold text-teal-300 tracking-wide">SkillLink</h1>
+    <nav class="space-x-6">
+      <button onclick="scrollToSection('hero')" class="hover:text-teal-400">Home</button>
+      <button onclick="scrollToSection('tasks')" class="hover:text-teal-400">Tasks</button>
+      <button onclick="scrollToSection('about')" class="hover:text-teal-400">About</button>
+      <button onclick="scrollToSection('dashboard')" class="hover:text-teal-400">Dashboard</button>
+    </nav>
+    <div class="flex space-x-2 items-center">
+      <label for="imageUploadHeader" class="text-white text-sm hidden sm:inline">📷</label>
+      <input type="file" id="imageUploadHeader" accept="image/*" class="hidden" />
+      <label for="fileUploadHeader" class="text-white text-sm hidden sm:inline">📄</label>
+      <input type="file" id="fileUploadHeader" class="hidden" />
+    </div>
+  </header>
+
+  <section id="hero" class="text-center py-20 px-6 mt-20">
+    <h2 class="text-4xl md:text-5xl font-bold mb-4">Welcome to SkillLink</h2>
+    <p class="text-lg md:text-xl max-w-2xl mx-auto text-gray-300">
+      Your decentralized platform to earn crypto through microtasks. Connect your Solana wallet and start working today.
+    </p>
+  </section>
+
+  <section id="tasks" class="max-w-3xl mx-auto p-6 glass rounded-xl shadow-lg mt-10">
+    <h3 class="text-2xl font-bold mb-4">SkillLink Task Manager</h3>
+    <div class="mb-4">
+      <input id="walletInput" type="text" placeholder="Enter Solana Wallet Address"
+        class="px-4 py-2 rounded w-full text-black mb-2" />
+      <button id="connectWallet"
+        class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded w-full btn">Connect Wallet</button>
+      <div id="walletStatus" class="mt-2 text-green-400 font-medium"></div>
+      <div id="walletError" class="text-red-400 mt-1 text-sm"></div>
+    </div>
+    <div id="taskList" class="task-list">
+      <h4 class="text-xl font-semibold mb-3">Available Tasks</h4>
+      <ul class="list-disc ml-6 space-y-2">
+        <li class="text-gray-300">Tag 10 product images</li>
+        <li class="text-gray-300">Transcribe a 2-minute audio clip</li>
+        <li class="text-gray-300">Classify 15 short news headlines</li>
+        <li class="text-gray-300">Moderate a set of user comments</li>
+      </ul>
+    </div>
+
+    <div class="mt-6">
+      <div class="bg-gray-800 p-4 rounded-lg mb-4">
+        <h4 class="text-xl font-semibold text-white mb-2">Remaining Tasks</h4>
+        <ul id="remainingTasks" class="list-disc ml-6 text-gray-300 space-y-1"></ul>
+      </div>
+      <div class="bg-gray-800 p-4 rounded-lg">
+        <h4 class="text-xl font-semibold text-white mb-2">Completed Tasks</h4>
+        <ul id="completedTasks" class="list-disc ml-6 text-green-400 space-y-1"></ul>
+      </div>
+    </div>
+  </section>
+  <section id="about" class="max-w-4xl mx-auto p-6 glass rounded-xl shadow-lg mt-10">
+    <h3 class="text-3xl font-bold mb-4">About SkillLink</h3>
+    <p class="text-gray-300 mb-2">
+      SkillLink is a revolutionary decentralized platform built for the modern web. At its core, SkillLink enables users to connect their digital wallets and earn cryptocurrency by completing useful, crowdsourced microtasks.
+    </p>
+    <p class="text-gray-300 mb-2">
+      Whether you're categorizing data, tagging images, summarizing content, or transcribing audio, your efforts are rewarded in real time with $SKL, the platform's utility token. It's the easiest way to turn spare minutes into meaningful value.
+    </p>
+    <p class="text-gray-300">
+      With SkillLink, we're building more than a task hub — we're creating the future of work. One where opportunity is global, decentralized, and powered by blockchain.
+    </p>
+  </section>
+
+  <section id="dashboard" class="max-w-6xl mx-auto p-6 glass rounded-xl shadow-lg mt-10">
+    <h3 class="text-3xl font-bold mb-4">User Dashboard</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-900 rounded-lg p-4">
+        <h4 class="text-xl font-semibold mb-2">Task History</h4>
+        <p class="text-gray-400">You haven't completed any tasks yet.</p>
+      </div>
+      <div class="bg-gray-900 rounded-lg p-4">
+        <h4 class="text-xl font-semibold mb-2">Current Balance</h4>
+        <p class="text-green-400 font-bold text-lg" id="currentBalance">$0.00 SKL</p>
+        <button id="withdrawBtn" disabled title="Unlocks at $10 SKL total balance"
+          class="mt-2 px-4 py-2 rounded bg-gray-700 text-gray-400 cursor-not-allowed">Withdraw</button>
+      </div>
+      <div class="bg-gray-900 rounded-lg p-4 md:col-span-2">
+        <h4 class="text-xl font-semibold mb-2">Achievements</h4>
+        <p class="text-gray-400">No badges earned yet. Start working to unlock rewards!</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="leaderboard" class="max-w-4xl mx-auto p-6 glass rounded-xl shadow-lg mt-10">
+    <h3 class="text-3xl font-bold mb-4">Leaderboard</h3>
+    <table class="min-w-full text-left text-sm text-gray-300">
+      <thead class="text-gray-400 uppercase tracking-wider">
+        <tr>
+          <th class="py-2">Wallet</th>
+          <th class="py-2">SKL Balance</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+  </section>
+
+  <footer class="text-center text-slate-400 mt-16 text-sm py-6">
+    <p>&copy; 2025 SkillLink. Designed with Web3 in mind.</p>
+    <div class="mt-4">
+      <a href="https://x.com/SkillLink_AI" target="_blank" class="text-teal-400 hover:underline">Follow us on Twitter</a>
+    </div>
+  </footer>
+  <script>
+    const canvas = document.getElementById('galaxy');
+    const ctx = canvas.getContext('2d');
+    let stars = [], starCount = 200;
+  
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  
+    for (let i = 0; i < starCount; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.5,
+        dx: (Math.random() - 0.5) * 0.5,
+        dy: (Math.random() - 0.5) * 0.5
+      });
+    }
+  
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+        s.x += s.dx;
+        s.y += s.dy;
+        if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+        if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
+      }
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+  
+    function scrollToSection(id) {
+      const section = document.getElementById(id);
+      if (section) section.scrollIntoView({ behavior: 'smooth' });
+    }
+  
+    window.addEventListener('load', () => {
+      const preloader = document.getElementById('preloader');
+      setTimeout(() => preloader.classList.add('fade-out'), 2500);
+    });
+  
+    let userWallet = null;
+    let currentBalance = 0;
+    const leaderboardBody = document.getElementById("leaderboardBody");
+    const storedData = JSON.parse(localStorage.getItem("skilllinkLeaderboard")) || {};
+  
+    function renderLeaderboard() {
+      leaderboardBody.innerHTML = "";
+      Object.entries(storedData).forEach(([wallet, balance]) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="py-2">${wallet}</td>
+          <td class="py-2 text-green-400 font-semibold">${balance} SKL</td>
+        `;
+        leaderboardBody.appendChild(row);
+      });
+    }
+  
+    function updateLeaderboard(address) {
+      const shortWallet = `${address.slice(0, 4)}...${address.slice(-4)}`;
+      storedData[shortWallet] = currentBalance.toFixed(2);
+      localStorage.setItem("skilllinkLeaderboard", JSON.stringify(storedData));
+      renderLeaderboard();
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+    const connectBtn = document.getElementById("connectWallet");
+    const walletInput = document.getElementById("walletInput");
+    const walletStatus = document.getElementById("walletStatus");
+    const walletError = document.getElementById("walletError");
+    const taskList = document.getElementById("taskList");
+    const remainingTasks = document.getElementById("remainingTasks");
+    const completedTasks = document.getElementById("completedTasks");
+    const withdrawBtn = document.getElementById("withdrawBtn");
+    const balanceDisplay = document.getElementById("currentBalance");
+
+    const tasks = [
+      "Tag 10 product images",
+      "Transcribe a 2-minute audio clip",
+      "Classify 15 short news headlines",
+      "Moderate a set of user comments"
+    ];
+
+    const isValidSolanaAddress = (address) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address);
+
+    connectBtn.addEventListener("click", () => {
+      const address = walletInput.value.trim();
+      if (!address) {
+        walletError.textContent = "Please enter your wallet address.";
+        return;
+      }
+      if (!isValidSolanaAddress(address)) {
+        walletError.textContent = "Invalid wallet address.";
+        return;
+      }
+
+      userWallet = address;
+      walletStatus.textContent = `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
+      connectBtn.disabled = true;
+      walletInput.disabled = true;
+      walletError.textContent = "";
+      taskList.style.display = "block";
+
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.textContent = task;
+        li.title = "Waiting for admin approval...";
+        li.style.cursor = "not-allowed";
+        li.classList.add("hover:text-yellow-400");
+        remainingTasks.appendChild(li);
+      });
+
+      updateLeaderboard(address);
+    });
+
+    // Upload from top-right file/image
+    const imageInput = document.getElementById("imageUploadHeader");
+    const fileInput = document.getElementById("fileUploadHeader");
+
+    function saveToSubmissionLog(type, filename) {
+      if (!userWallet) return;
+      const key = `responses_${userWallet}`;
+      const history = JSON.parse(localStorage.getItem(key)) || [];
+      const entry = {
+        task: "[Manual Upload]",
+        response: "(manual upload)",
+        image: type === "image" ? filename : null,
+        file: type === "file" ? filename : null,
+        timestamp: new Date().toISOString()
+      };
+      history.push(entry);
+      localStorage.setItem(key, JSON.stringify(history));
+    }
+
+    imageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        saveToSubmissionLog("image", file.name);
+        alert("Image uploaded and sent for admin review!");
+        imageInput.value = "";
+      }
+    });
+
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        saveToSubmissionLog("file", file.name);
+        alert("File uploaded and sent for admin review!");
+        fileInput.value = "";
+      }
+    });
+
+    renderLeaderboard();
+
+    function incrementBalance() {
+      currentBalance += 0.05;
+      balanceDisplay.textContent = `$${currentBalance.toFixed(2)} SKL`;
+      if (currentBalance >= 10) {
+        withdrawBtn.disabled = false;
+        withdrawBtn.classList.remove("cursor-not-allowed", "bg-gray-700", "text-gray-400");
+        withdrawBtn.classList.add("bg-teal-500", "hover:bg-teal-600");
+        withdrawBtn.title = "Click to withdraw your balance";
+      }
+    }
+  });
+</script>
+</body>
+</html>
